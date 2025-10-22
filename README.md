@@ -22,3 +22,33 @@ docker run -e POSTGRES_PASSWORD=<your_password> -v postgres_data:/var/lib/postgr
 Replace `<your_password>` with your chosen password.
 
 ---
+
+# Technical Exercise Vaudoise
+
+This project provides a REST API to manage Clients and Contracts.
+
+## Running
+Configure your database connection in `.env` (see `src/main/resources/application.properties` for env var names), then run:
+
+- Maven: `./mvnw spring-boot:run`
+- Or from IDE: run `TechnicalExerciseVaudoiseApplication`
+
+## API Documentation (Swagger / OpenAPI)
+Automatic API documentation is enabled via springdoc-openapi.
+
+- Swagger UI: http://localhost:8080/swagger-ui (or /swagger-ui/index.html)
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
+
+These endpoints are generated automatically from the controllers and DTO validations.
+
+## Main Endpoints
+- POST /clients
+- GET /clients/{id}
+- PUT /clients/{id}
+- DELETE /clients/{id}
+- POST /clients/{clientId}/contracts
+- PATCH /contracts/{id}/amount
+- GET /clients/{clientId}/contracts?updatedFrom=...&updatedTo=...
+- GET /clients/{clientId}/contracts/active/sum
+
+Dates use ISO 8601 format. Validation is applied to dates, phone numbers, emails and amounts.
