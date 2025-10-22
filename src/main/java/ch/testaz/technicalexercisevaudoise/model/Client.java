@@ -3,6 +3,7 @@ package ch.testaz.technicalexercisevaudoise.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -36,8 +37,20 @@ public class Client {
     @Column(nullable = false)
     private ClientType type;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "client")
     private List<Contract> contracts;
+
+    @PreRemove
+    private void onPreRemove() {
+        if (contracts != null && !contracts.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Contract c : contracts) {
+                c.setEndDate(now);
+                c.setUpdatedDate(now);
+                c.setClient(null);
+            }
+        }
+    }
 
     public enum ClientType {
         PERSON,

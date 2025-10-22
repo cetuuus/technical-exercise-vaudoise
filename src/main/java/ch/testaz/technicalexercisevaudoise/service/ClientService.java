@@ -38,14 +38,13 @@ public class ClientService {
     @Transactional
     public ClientResponseDTO update(Long id, ClientDTO dto) {
         Client client = clientRepository.findById(id).orElseThrow(() -> new NotFoundException("Client not found"));
-        // type is immutable too? Spec not explicit, but we allow changing type if constraints met
-        // Birthdate and companyIdentifier are immutable per spec
+        // Type, birthDate and companyIdentifier are immutable per spec
         validateUpdateImmutables(client, dto);
-        // Update mutable fields only
+        // Update only mutable fields
         client.setName(dto.getName());
         client.setEmail(dto.getEmail());
         client.setPhone(dto.getPhone());
-        // Do not update birthDate/companyIdentifier
+        // Do not update type/birthDate/companyIdentifier
         Client saved = clientRepository.save(client);
         return toResponse(saved);
     }
@@ -53,12 +52,14 @@ public class ClientService {
     @Transactional
     public void delete(Long id) {
         Client client = clientRepository.findById(id).orElseThrow(() -> new NotFoundException("Client not found"));
-        // Update all contracts end date to now
+        // Before deleting the client, close all their contracts and detach them from the client
         LocalDateTime now = LocalDateTime.now();
-        for (Contract c : contractRepository.findByClient_Id(client.getId())) {
-            c.setEndDate(now);
+        for (Contract contract : contractRepository.findByClient_Id(id)) {
+            contract.setEndDate(now);
+            contract.setUpdatedDate(now);
+            contract.setClient(null);
+            contractRepository.save(contract);
         }
-        // flush contracts via repository saveAll implicitly by dirty checking
         clientRepository.delete(client);
     }
 
@@ -77,6 +78,9 @@ public class ClientService {
     }
 
     private void validateUpdateImmutables(Client existing, ClientDTO incoming) {
+        if (incoming.getType() != null && existing.getType() != incoming.getType()) {
+            throw new ValidationException("type cannot be updated");
+        }
         if (existing.getBirthDate() != null && incoming.getBirthDate() != null && !existing.getBirthDate().equals(incoming.getBirthDate())) {
             throw new ValidationException("birthDate cannot be updated");
         }

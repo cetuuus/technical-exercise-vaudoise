@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,11 +40,13 @@ public class ContractController {
     public List<ContractResponseDTO> getActiveContracts(
             @PathVariable Long clientId,
             @RequestParam(value = "updatedFrom", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime updatedFrom,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate updatedFrom,
             @RequestParam(value = "updatedTo", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime updatedTo
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate updatedTo
     ) {
-        return contractService.listActiveForClient(clientId, updatedFrom, updatedTo);
+        LocalDateTime fromDateTime = updatedFrom != null ? updatedFrom.atStartOfDay() : null;
+        LocalDateTime toDateTime = updatedTo != null ? updatedTo.plusDays(1).atStartOfDay().minusNanos(1) : null;
+        return contractService.listActiveForClient(clientId, fromDateTime, toDateTime);
     }
 
     @GetMapping("/clients/{clientId}/contracts/active/sum")
