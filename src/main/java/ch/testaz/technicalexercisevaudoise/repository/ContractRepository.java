@@ -20,6 +20,12 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
                                                          @Param("from") LocalDateTime from,
                                                          @Param("to") LocalDateTime to);
 
+    @Query("SELECT c FROM Contract c WHERE c.client.id = :clientId AND c.startDate <= :now AND (c.endDate IS NULL OR :now <= c.endDate) AND c.updatedDate >= :from")
+    List<Contract> findByClientIdAndUpdatedFrom(@Param("clientId") Long clientId, @Param("now") LocalDateTime now, @Param("from") LocalDateTime from);
+
+    @Query("SELECT c FROM Contract c WHERE c.client.id = :clientId AND c.startDate <= :now AND (c.endDate IS NULL OR :now <= c.endDate) AND c.updatedDate <= :to")
+    List<Contract> findByClientIdAndUpdatedTo(@Param("clientId") Long clientId, @Param("now") LocalDateTime now, @Param("to") LocalDateTime to);
+
     @Query("SELECT COALESCE(SUM(c.amount), 0) FROM Contract c WHERE c.client.id = :clientId AND c.startDate <= :now AND (c.endDate IS NULL OR :now <= c.endDate)")
     BigDecimal sumAmountOfActiveByClientId(@Param("clientId") Long clientId, @Param("now") LocalDateTime now);
 

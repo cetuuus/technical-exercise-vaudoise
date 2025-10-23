@@ -5,6 +5,15 @@ This project is a **Java** and **Spring Boot** backend for managing clients (ind
 - Manage contracts (creation, updates, and calculation of active contract costs).
 - Provide a high-performance endpoint to calculate the sum of active contract costs per client.
 
+## Architecture and Design
+The service uses a pragmatic layered architecture:
+- Web layer: REST controllers handle HTTP, request validation, and DTO mapping only.
+- Service layer: orchestrates use cases and enforces business rules (client lifecycle, contract activation periods, amount changes) and transaction boundaries.
+- Persistence layer: Spring Data JPA repositories on PostgreSQL; entities model Clients and Contracts with JPA constraints and indexes.
+- DTOs: decouple external API from domain models; Bean Validation ensures input integrity.
+- Aggregation: dedicated repository query calculates the sum of active contracts per client in the database to avoid N+1, scan less data, and leverage date-range filtering.
+- Cross-cutting: centralized exception handler maps errors to meaningful HTTP codes; OpenAPI documents the API; configuration is environment-driven for portability and testability.
+
 ---
 
 ## Setup
@@ -23,32 +32,16 @@ Replace `<your_password>` with your chosen password.
 
 ---
 
-# Technical Exercise Vaudoise
-
-This project provides a REST API to manage Clients and Contracts.
-
 ## Running
 Configure your database connection in `.env` (see `src/main/resources/application.properties` for env var names), then run:
-
-- Maven: `./mvnw spring-boot:run`
-- Or from IDE: run `TechnicalExerciseVaudoiseApplication`
+```bash
+./mvnw spring-boot:run
+```
 
 ## API Documentation (Swagger / OpenAPI)
 Automatic API documentation is enabled via springdoc-openapi.
 
-- Swagger UI: http://localhost:8080/swagger-ui (or /swagger-ui/index.html)
+- Swagger UI: http://localhost:8080/swagger-ui
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 These endpoints are generated automatically from the controllers and DTO validations.
-
-## Main Endpoints
-- POST /clients
-- GET /clients/{id}
-- PUT /clients/{id}
-- DELETE /clients/{id}
-- POST /clients/{clientId}/contracts
-- PATCH /contracts/{id}/amount
-- GET /clients/{clientId}/contracts?updatedFrom=...&updatedTo=...
-- GET /clients/{clientId}/contracts/active/sum
-
-Dates use ISO 8601 format. Validation is applied to dates, phone numbers, emails and amounts.

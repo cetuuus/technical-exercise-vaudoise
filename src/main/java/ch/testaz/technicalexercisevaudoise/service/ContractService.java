@@ -11,8 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class ContractService {
@@ -46,27 +45,34 @@ public class ContractService {
     public ContractResponseDTO updateAmount(Long contractId, BigDecimal newAmount) {
         Contract c = contractRepository.findById(contractId)
                 .orElseThrow(() -> new ClientService.NotFoundException("Contract not found"));
+        // Do not allow updates on ended contracts (endDate in the past or now)
+        LocalDateTime now = LocalDateTime.now();
+        if (c.getEndDate() != null && !c.getEndDate().isAfter(now)) {
+            throw new ClientService.ValidationException("Cannot update amount of an ended contract");
+        }
         c.setAmount(newAmount);
         // updatedDate will be handled by auditing @PreUpdate or set now
-        c.setUpdatedDate(LocalDateTime.now());
+        c.setUpdatedDate(now);
         Contract saved = contractRepository.save(c);
         return toResponse(saved);
     }
 
     @Transactional(readOnly = true)
     public List<ContractResponseDTO> listActiveForClient(Long clientId, LocalDateTime updatedFrom, LocalDateTime updatedTo) {
-        LocalDateTime now = LocalDateTime.now();
-        List<Contract> contracts;
+       List<Contract> contracts;
+       LocalDateTime now = LocalDateTime.now();
+       
         if (updatedFrom != null && updatedTo != null) {
             contracts = contractRepository.findActiveByClientIdAndUpdatedBetween(clientId, now, updatedFrom, updatedTo);
-        } else if (updatedFrom != null) {
-            contracts = contractRepository.findActiveByClientIdAndUpdatedBetween(clientId, now, updatedFrom, LocalDateTime.now());
+       } else if (updatedFrom != null) {
+            contracts = contractRepository.findByClientIdAndUpdatedFrom(clientId, now, updatedFrom);
         } else if (updatedTo != null) {
-            contracts = contractRepository.findActiveByClientIdAndUpdatedBetween(clientId, now, LocalDateTime.MIN, updatedTo);
+            contracts = contractRepository.findByClientIdAndUpdatedTo(clientId, now, updatedTo);
         } else {
             contracts = contractRepository.findActiveByClientId(clientId, now);
         }
-        return contracts.stream().map(this::toResponse).collect(Collectors.toList());
+        
+        return contracts.stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)

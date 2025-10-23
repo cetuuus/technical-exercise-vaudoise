@@ -23,7 +23,7 @@ public class Contract {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_id", nullable = true)
+    @JoinColumn(name = "client_id")
     private Client client;
 
     @CreatedDate
@@ -42,7 +42,9 @@ public class Contract {
 
     @PrePersist
     protected void onCreate() {
-        this.startDate = LocalDateTime.now();
+        if (this.startDate == null) {
+            this.startDate = LocalDateTime.now();
+        }
         this.updatedDate = LocalDateTime.now();
     }
 

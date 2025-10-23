@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/", produces = "application/json")
+@RequestMapping(produces = "application/json")
 public class ContractController {
 
     private final ContractService contractService;
