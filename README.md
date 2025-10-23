@@ -11,8 +11,9 @@
 ### Start the database
 Once docker is installed on your machine, you can run the following command:
 ```bash
-docker run -e POSTGRES_PASSWORD=secret -v postgres_data:/var/lib/postgresql -p 5432:5432 -d postgres:18
+docker run -e POSTGRES_PASSWORD=<your_password> -v postgres_data:/var/lib/postgresql -p 5432:5432 -d postgres:18
 ```
+Replace `<your_password>` with your chosen password.
 
 ### Start the application
 First, configure the database connection in `.env` (copy `.env.example`), then run
