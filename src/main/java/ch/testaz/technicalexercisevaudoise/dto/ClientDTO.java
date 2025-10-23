@@ -21,9 +21,9 @@ public class ClientDTO {
     @Pattern(regexp = "^[0-9 .()+-]{7,20}$", message = "Invalid phone number format")
     private String phone;
 
-    private LocalDate birthDate; // required for PERSON
+    private LocalDate birthDate;
 
-    private String companyIdentifier; // required for COMPANY, e.g., aaa-123
+    private String companyIdentifier;
 
     @NotNull
     private Client.ClientType type;

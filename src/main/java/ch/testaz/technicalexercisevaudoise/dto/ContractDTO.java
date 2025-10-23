@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 public class ContractDTO {
-    private LocalDateTime startDate; // optional, default now if null
-    private LocalDateTime endDate;   // optional, may be null
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)

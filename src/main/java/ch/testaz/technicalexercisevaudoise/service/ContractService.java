@@ -51,8 +51,6 @@ public class ContractService {
             throw new ClientService.ValidationException("Cannot update amount of an ended contract");
         }
         c.setAmount(newAmount);
-        // updatedDate will be handled by auditing @PreUpdate or set now
-        c.setUpdatedDate(now);
         Contract saved = contractRepository.save(c);
         return toResponse(saved);
     }
